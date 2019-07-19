@@ -23,6 +23,5 @@ python csv2vw.py \
 python csv2vw.py \
 	--skip_headers \
 	--convert_zeros \
-	--label_index -1 \
 	$test_file \
 	$test_vw_file
