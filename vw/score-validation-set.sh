@@ -6,7 +6,7 @@ model=$HOME/mnist-cb/models/model.vw
 test_file=$HOME/mnist-cb/data/test.vw
 
 # Outputs
-test_preds=$HOME/mnist-cb/data/test.csv
+test_preds=$HOME/mnist-cb/data/test_preds.csv
 
 
 
