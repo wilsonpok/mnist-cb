@@ -15,4 +15,4 @@ vw \
 	--oaa 10 \
 	--predictions $train_preds \
 	--final_regressor $model \
-	--readable_model $readable_model # --cbify 10 \
+	--readable_model $readable_model
