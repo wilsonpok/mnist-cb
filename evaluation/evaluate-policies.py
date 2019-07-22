@@ -52,34 +52,37 @@ test['label'].value_counts(normalize=True)
 
 
 
-
 #####################
 # Loss lookup
 #####################
 
 loss_lookup = pd.DataFrame({'actual' : test['label'].str.replace('_', '').astype(int)})
 
-loss_lookup['loss_a0'] = 1
-loss_lookup['loss_a1'] = 1
-loss_lookup['loss_a2'] = 1
-loss_lookup['loss_a3'] = 1
-loss_lookup['loss_a4'] = 1
-loss_lookup['loss_a5'] = 1
-loss_lookup['loss_a6'] = 1
-loss_lookup['loss_a7'] = 1
-loss_lookup['loss_a8'] = 1
-loss_lookup['loss_a9'] = 1
+loss_for_mismatch = 0
 
-loss_lookup['loss_a0'].loc[loss_lookup.actual == 0] = -1
-loss_lookup['loss_a1'].loc[loss_lookup.actual == 1] = -1
-loss_lookup['loss_a2'].loc[loss_lookup.actual == 2] = -1
-loss_lookup['loss_a3'].loc[loss_lookup.actual == 3] = -1
-loss_lookup['loss_a4'].loc[loss_lookup.actual == 4] = -1
-loss_lookup['loss_a5'].loc[loss_lookup.actual == 5] = -1
-loss_lookup['loss_a6'].loc[loss_lookup.actual == 6] = -1
-loss_lookup['loss_a7'].loc[loss_lookup.actual == 7] = -1
-loss_lookup['loss_a8'].loc[loss_lookup.actual == 8] = -1
-loss_lookup['loss_a9'].loc[loss_lookup.actual == 9] = -1
+loss_lookup['loss_a0'] = loss_for_mismatch
+loss_lookup['loss_a1'] = loss_for_mismatch
+loss_lookup['loss_a2'] = loss_for_mismatch
+loss_lookup['loss_a3'] = loss_for_mismatch
+loss_lookup['loss_a4'] = loss_for_mismatch
+loss_lookup['loss_a5'] = loss_for_mismatch
+loss_lookup['loss_a6'] = loss_for_mismatch
+loss_lookup['loss_a7'] = loss_for_mismatch
+loss_lookup['loss_a8'] = loss_for_mismatch
+loss_lookup['loss_a9'] = loss_for_mismatch
+
+c = -1
+
+loss_lookup['loss_a0'].loc[loss_lookup.actual == 0] = c
+loss_lookup['loss_a1'].loc[loss_lookup.actual == 1] = c
+loss_lookup['loss_a2'].loc[loss_lookup.actual == 2] = c
+loss_lookup['loss_a3'].loc[loss_lookup.actual == 3] = c
+loss_lookup['loss_a4'].loc[loss_lookup.actual == 4] = c
+loss_lookup['loss_a5'].loc[loss_lookup.actual == 5] = c
+loss_lookup['loss_a6'].loc[loss_lookup.actual == 6] = c
+loss_lookup['loss_a7'].loc[loss_lookup.actual == 7] = c
+loss_lookup['loss_a8'].loc[loss_lookup.actual == 8] = c
+loss_lookup['loss_a9'].loc[loss_lookup.actual == 9] = c
 
 
 
@@ -107,6 +110,14 @@ comparison['loss'].loc[comparison.pred == 8] = comparison.loss_a8
 comparison['loss'].loc[comparison.pred == 9] = comparison.loss_a9
 
 
+
+
+
+
+
+comparison['random'] = comparison['pred'].sample(frac=1, random_state=666)\
+.reset_index(drop=True)
+
 comparison['loss_random'] = 0
 comparison['loss_random'].loc[comparison.random == 0] = comparison.loss_a0
 comparison['loss_random'].loc[comparison.random == 1] = comparison.loss_a1
@@ -121,8 +132,6 @@ comparison['loss_random'].loc[comparison.random == 9] = comparison.loss_a9
 
 
 
-comparison['random'] = comparison['pred'].sample(frac=1, random_state=666)\
-.reset_index(drop=True)
 
 
 p0 = 0.0980
@@ -179,10 +188,41 @@ len(random_set)
 
 
 ###########
+# DM
+###########
+dm_model = np.sum(comparison['loss']) / len(comparison)
+dm_model
+# -0.9059
+
+dm_random = np.sum(comparison['loss_random']) / len(comparison)
+dm_random
+# -0.0989
+
+
+###########
 # IPS
 ###########
-round(np.mean(model_set['loss_w']), 5)
-# -9.98366
+np.sum(comparison['loss_w'].loc[comparison.actual == comparison.pred]) / len(comparison)
+# -9.044200016780616
 
-round(np.mean(random_set['loss_w']), 5)
-# -8.05594
+np.sum(comparison['loss_w_random'].loc[comparison.actual == comparison.random]) / len(comparison)
+# -0.9858121367195357
+
+
+###########
+# DR
+###########
+
+model_set = comparison.loc[comparison.actual == comparison.pred]
+model_set['dr_calc'] = ((model_set['loss'] - dm_model) / model_set['prob']) + dm_model
+np.sum(model_set['dr_calc']) / len(comparison)
+# -1.671714031579056
+
+random_set = comparison.loc[comparison.actual == comparison.random]
+random_set['dr_calc'] = ((random_set['loss'] - dm_random) / random_set['prob']) + dm_random
+np.sum(random_set['dr_calc']) / len(comparison)
+# -0.80330733049238
+
+
+
+
